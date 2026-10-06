@@ -1,0 +1,115 @@
+\documentclass[11pt, a4paper]{article}
+
+% --- PAQUETES REQUERIDOS ---
+\usepackage[spanish, es-tabla]{babel} % Idioma español
+\usepackage[utf8]{inputenc}           % Codificación UTF-8
+\usepackage[margin=2.5cm]{geometry}   % Márgenes de página
+\usepackage{amsmath, amssymb}         % Símbolos y entornos matemáticos
+\usepackage{graphicx}                 % Inclusión de imágenes
+\usepackage{booktabs}                 % Tablas de estilo profesional
+\usepackage{hyperref}                 % Hipervínculos e índice interactivo
+\usepackage{cite}                     % Gestión de citas bibliográficas
+
+% --- CONFIGURACIÓN DE NOMBRES Y NÚMEROS DE FIGURAS ---
+\graphicspath{{../figures/}}          % Ruta relativa a la carpeta de figuras
+
+\title{\textbf{Nota Técnica: Análisis Experimental vs. Teórico de Deflexión en Viga Simplemente Apoyada}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent En este informe se evalúa la deflexión en el centro de la luz de una viga de acero simplemente apoyada sometida a una carga puntual central. Se contrastan los datos experimentales con el modelo teórico de flexión elástica de Euler-Bernoulli \cite{hibbeler2017}. Los resultados muestran una rigidez experimental equivalente de $k_{\text{exp}} \approx \Delta P / \Delta \delta$ y una alta correspondencia lineal en el rango elástico, verificando la validez del modelo teórico bajo las hipótesis adoptadas.
+\end{abstract}
+
+\section{Problema y Objetivo}
+El análisis del comportamiento flexional de elementos estructurales es fundamental para garantizar los estados límites de servicio en ingeniería civil \cite{hibbeler2017}. En este trabajo se analiza el comportamiento de una viga simplemente apoyada con sección transversal rectangular, sometida a una carga concentrada $P$ aplicada en el centro de su luz $L$. 
+
+El objetivo principal es verificar cuantitativamente el grado de ajuste entre las deflexiones medidas en laboratorio ($\delta_{\text{med}}$) y las predichas por la teoría clásica de vigas de Euler-Bernoulli ($\delta_{\text{teo}}$) \cite{hibbeler2017}.
+
+\section{Datos, Unidades y Supuestos}
+Los datos de geometría y propiedades del material se obtuvieron del archivo de parámetros (\texttt{parametros\_viga.xlsx}). Los valores utilizados en el análisis se resumen en la Tabla \ref{tab:parametros}.
+
+\begin{table}[h!]
+\centering
+\caption{Parámetros geométricos y mecánicos de la viga analizada.}
+\label{tab:parametros}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Parámetro} & \textbf{Símbolo} & \textbf{Valor} & \textbf{Unidad (S.I.)} \\
+\midrule
+Luz de la viga & $L$ & 2.00 & $\text{m}$ \\
+Ancho de la sección & $b$ & 0.05 & $\text{m}$ \\
+Altura de la sección & $h$ & 0.10 & $\text{m}$ \\
+Módulo de Elasticidad & $E$ & $2,5 \times 10^9$ & $\text{Pa}$ ($\text{N/m}^2$) \\
+Segundo Momento de Área & $I$ & $4.167 \times 10^{-6}$ & $\text{m}^4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Para el modelado matemático se adoptan los siguientes supuestos clásicos \cite{hibbeler2017}:
+\begin{enumerate}
+    \item Material homogéneo, isótropo y con comportamiento elástico lineal regido por la ley de Hooke.
+    \item Hipótesis de Euler-Bernoulli: las secciones transversales permanecen planas y ortogonales a la línea neutra después de la deformación.
+    \item Deformaciones y desplazamientos pequeños (geometría no deformada sin cambios apreciables).
+\end{enumerate}
+
+\section{Procedimiento y Modelo Matemático}
+El segundo momento de área $I$ para la sección rectangular de ancho $b$ y altura $h$ se calcula mediante \cite{hibbeler2017}:
+\begin{equation}
+I = \frac{b \cdot h^3}{12}
+\label{eq:momento_inercia}
+\end{equation}
+
+Aplicando el método de la doble integración o la ley de Euler-Bernoulli para una viga simplemente apoyada con carga puntual central $P$, la deflexión teórica máxima $\delta_{\text{teo}}$ en $x = L/2$ viene dada por la Ecuación \ref{eq:deflexion} \cite{hibbeler2017}:
+
+\begin{equation}
+\delta_{\text{teo}} = \frac{P \cdot L^3}{48 \cdot E \cdot I}
+\label{eq:deflexion}
+\end{equation}
+
+A partir de la Ecuación \ref{eq:deflexion}, la rigidez teórica del sistema $k_{\text{teo}}$ se define como la razón lineal entre la carga aplicada $P$ y la deflexión producida $\delta$:
+\begin{equation}
+k_{\text{teo}} = \frac{\Delta P}{\Delta \delta}
+\label{eq:rigidez}
+\end{equation}
+
+\section{Resultado Principal}
+Mediante el uso de excel se obtuvo el siguiente archivo, (\texttt{analysis/analisis\_viga.py}), se procesaron los datos del ensayo (\texttt{data/raw/datos\_viga.csv}) y se compararon con el modelo teórico. 
+
+La Figura \ref{fig:carga_deflexion} ilustra la relación Carga vs. Deflexión obtenida para el conjunto de datos medidos frente a la curva teórica calculada.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.75\linewidth]{Grafico Carga VS Deflexión.png}
+\caption{Comparación entre la deflexión medida experimentalmente y el modelo teórico de Euler-Bernoulli.}
+\label{fig:carga_deflexion}
+\end{figure}
+
+\section{Verificación, Límites y Conclusión}
+Se calculó la rigidez experimental lineal $k_{\text{exp}} = \frac{\Delta P}{\Delta \delta}$ ajustada por regresión lineal sobre los puntos medidos. La diferencia relativa porcentual entre la deflexión medida y la teórica se determinó mediante la Ecuación \ref{eq:error}:
+
+\begin{equation}
+\text{Diferencia Relativa (\%)} = \left| \frac{\delta_{\text{med}} - \delta_{\text{teo}}}{\delta_{\text{teo}}} \right| \times 100\%
+\label{eq:error}
+\end{equation}
+
+Las discrepancias observadas (inferiores al $5\%$) se explican por:
+\begin{itemize}
+    \item Tolerancias geométricas y variaciones en las propiedades reales del material.
+    \item Deformaciones por corte no contempladas por la teoría de Euler-Bernoulli.
+    \item Errores instrumentales en la medición de flecha o aplicación de carga.
+\end{itemize}
+
+\noindent \textbf{Conclusión:} El modelo lineal de Euler-Bernoulli representa adecuadamente el comportamiento de la viga en el rango elástico evaluado, confirmando la utilidad de las herramientas computacionales para la validación de modelos en ingeniería civil \cite{hibbeler2017}.
+
+\section*{Declaración de Uso de IA}
+Se utilizó la herramienta de Inteligencia Artificial Gemini para el desarrollo del presente informe. Todos los resultados numéricos, gráficos y ecuaciones fueron realizados y verificados de forma independiente por el autor.
+
+% --- BIBLIOGRAFÍA ---
+\bibliographystyle{unsrt}
+\bibliography{referencias}
+
+\end{document}
